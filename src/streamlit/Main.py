@@ -47,9 +47,12 @@ if result > 0:
 
     query = """WITH base AS 
         (
-            SELECT ticker, buy_vol + sell_vol AS volume
+            SELECT 
+                ticker,
+                SUM(buy_vol + sell_vol) AS volume
             FROM transaction_volume
             WHERE transaction_date >= (NOW() - INTERVAL '270 day')::date
+            GROUP BY ticker
         )
         SELECT 
             *,
