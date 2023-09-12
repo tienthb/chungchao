@@ -1,0 +1,32 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres:15.4
+    restart: always
+    env_file: .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data  # Persist database data
+    networks:
+      - bridge_network
+  
+  streamlit:
+    build:
+      context: .
+    ports:
+      - "8501:8501"
+    env_file: .env
+    depends_on:
+      - db
+    networks:
+      - bridge_network
+
+networks:
+  bridge_network:
+    driver: bridge
+
+volumes:
+  pgdata:
+
