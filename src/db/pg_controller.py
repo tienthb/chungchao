@@ -28,23 +28,26 @@ class PGController:
             WHERE 1 = 0"""
         self.cursor.execute(query)
         self.cursor.copy_from(data, tmp_tbl_name, sep=",")
-        # merge into target
-        query = f"""MERGE INTO {tbl_name} t
+        # DELETE
+        query = f"""DELETE FROM {tbl_name} t
             USING {tmp_tbl_name} s
-            ON s.ticker = t.ticker
-                AND s.transaction_date = t.transaction_date
-            WHEN MATCHED THEN
-                UPDATE SET buy_vol = s.buy_vol,
-                    buy_amt = s.buy_amt,
-                    sell_vol = s.sell_vol,
-                    sell_amt = s.sell_amt,
-                    volume = s.volume,
-                    oi = s.oi,
-                    daily_vol = s.daily_vol
-            WHEN NOT MATCHED THEN
-                INSERT (ticker, transaction_date, buy_vol, buy_amt, sell_vol, sell_amt, volume, oi, daily_vol)
-                VALUES (s.ticker, s.transaction_date, s.buy_vol, s.buy_amt, s.sell_vol, s.sell_amt, s.volume, s.oi, s.daily_vol)"""
+            WHERE t.ticker = s.ticker
+                AND t.transaction_date = s.transaction_date"""
         self.cursor.execute(query)
+
+        # Get column list
+        query = f"""SELECT string_agg(column_name, ',')
+            FROM information_schema.COLUMNS
+            WHERE table_name = '{tbl_name}'"""
+        self.cursor.execute(query)
+        columns = self.cursor.fetchone()[0]
+
+        # INSERT
+        query = f"""INSERT INTO {tbl_name} ({columns})
+            SELECT {columns}
+            FROM {tmp_tbl_name}"""
+        self.cursor.execute(query)
+
         # Drop tmp table
         query = f"DROP TABLE IF EXISTS {tmp_tbl_name}"
         self.cursor.execute(query)
