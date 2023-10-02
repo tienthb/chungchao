@@ -31,52 +31,9 @@ def load_data(file):
     controller.load_data(file.name, buffer)
     return df
 
-def calc_up_to_date():
-    query = "SELECT COUNT(1) FROM transaction_snapshot"
-    cur.execute(query)
-    result = cur.fetchone()[0]
-    # return result
-    if result == 0:
-        query = """INSERT INTO transaction_snapshot
-            SELECT 
-                ticker,
-                MAX(transaction_date) AS transaction_date,
-                SUM(daily_vol) AS volume
-            FROM transaction_volume t
-            GROUP BY ticker, NOW()::date"""
-        cur.execute(query)
-        controller.conn.commit()
-    else:
-        query = """MERGE INTO transaction_snapshot t
-            USING (
-                WITH last_updated AS 
-                (
-                    SELECT MAX(transaction_date) transaction_date
-                    FROM transaction_snapshot ts
-                )
-                SELECT 
-                    ticker,
-                    MAX(transaction_date) AS transaction_date,
-                    SUM(daily_vol) AS volume
-                FROM transaction_volume t
-                WHERE transaction_date > (SELECT transaction_date FROM last_updated)
-                GROUP BY ticker
-            ) s
-            ON t.ticker = s.ticker
-            WHEN MATCHED THEN
-                UPDATE 
-                SET volume = t.volume + s.volume,
-                    transaction_date = s.transaction_date
-            WHEN NOT MATCHED THEN
-                INSERT (ticker, transaction_date, volume)
-                VALUES (s.ticker, s.transaction_date, s.volume)"""
-
 def patching_db():
     query = """
-        DROP TABLE IF EXISTS transaction_snapshot;
-
-        ALTER TABLE transaction_volume
-        DROP COLUMN avg_price
+        SELECT TRUE
     """
     cur.execute(query)
 
