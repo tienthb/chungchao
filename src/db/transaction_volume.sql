@@ -7,6 +7,5 @@ CREATE TABLE IF NOT EXISTS transaction_volume (
 	sell_amt INT8,
 	volume INT8,
 	oi INT8,
-	daily_vol INT8,
-	avg_price INT
+	daily_vol INT8
 ) 

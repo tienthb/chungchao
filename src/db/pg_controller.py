@@ -35,12 +35,7 @@ class PGController:
                 AND t.transaction_date = s.transaction_date"""
         self.cursor.execute(query)
 
-        # Get column list
-        query = f"""SELECT string_agg(column_name, ',')
-            FROM information_schema.COLUMNS
-            WHERE table_name = '{tbl_name}'"""
-        self.cursor.execute(query)
-        columns = self.cursor.fetchone()[0]
+        columns = self.get_column_list(tbl_name)
 
         # INSERT
         query = f"""INSERT INTO {tbl_name} ({columns})
@@ -51,6 +46,17 @@ class PGController:
         # Drop tmp table
         query = f"DROP TABLE IF EXISTS {tmp_tbl_name}"
         self.cursor.execute(query)
+
+    def get_column_list(self, tbl_name):
+        # Get column list
+        query = f"""SELECT string_agg(column_name, ',')
+            FROM information_schema.COLUMNS
+            WHERE table_name = '{tbl_name}'"""
+        self.cursor.execute(query)
+        columns = self.cursor.fetchone()[0]
+        return columns
+    
+
 
 
 # Init tables if not exists

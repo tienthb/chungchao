@@ -23,59 +23,66 @@ limit_row = 50
 
 if al.has_data():
     # Layout settings
-    col1, col2, col3 = st.columns(3)
+    
 
     st.markdown(
         """
         <style>
             div[data-testid="column"]:nth-of-type(1)
             {
-                text-align: center;
-                width: 30%
+                text-align: center
             } 
 
             div[data-testid="column"]:nth-of-type(2)
             {
-                text-align: center;
-                width: 70%
+                text-align: center
             }
 
+            div[data-testid="column"]:nth-of-type(3)
+            {
+                text-align: center
+            }
         </style>
         """,unsafe_allow_html=True
     )
+    n_months = st.number_input("Insert number of months", value=9)
+    # st.write("The current number is", n_months)
+    df, df2, df3 = al.calc_top_10_stock(n_months)
+    col1, col2, col3 = st.columns(3)
 
-    stock = al.stock_summary()
-    stock_rank = al.rank_by_vol()
+    # df
+    # df2
+    # df = al.calc_top_10_stock(n_months)
+    # query
+    # stock = al.stock_summary()
+    # stock_rank = al.rank_by_vol()
     
     with col1:
-        st.subheader("Most Buy & Sell")
-        st.header(f"""{stock_rank[stock_rank["rn"] == 1]["volume"].values[0]:,}""")
-        f"""**{stock_rank[stock_rank["rn"] == 1]["ticker"].values[0]}**"""
-        st.dataframe(
-            stock_rank.loc[stock_rank["rn"] <= limit_row, ["ticker", "volume"]], 
-            hide_index=True
-        )
+        st.dataframe(df, hide_index=True)
+    #     n_months = st.number_input("Insert number of months", value=9)
+    #     st.subheader("Most Buy & Sell")
+    #     st.header(f"""{stock_rank[stock_rank["rn"] == 1]["volume"].values[0]:,}""")
+    #     f"""**{stock_rank[stock_rank["rn"] == 1]["ticker"].values[0]}**"""
+    #     st.dataframe(
+    #         stock_rank.loc[stock_rank["rn"] <= limit_row, ["ticker", "volume"]], 
+    #         hide_index=True
+    #     )
 
     with col2:
-        tickers = al.get_stocks()
-        tickers = tickers.split(",")
-        option = st.selectbox(
-            "Select stock",
-            tickers
-        )
-        st.dataframe(
-            stock[stock["ticker"] == option].sort_values("transaction_date", ascending=False), 
-            hide_index=True
-        )
+        st.dataframe(df2, hide_index=True)
+    #     tickers = al.get_stocks()
+    #     tickers = tickers.split(",")
+    #     option = st.selectbox(
+    #         "Select stock",
+    #         tickers
+    #     )
+    #     st.dataframe(
+    #         stock[stock["ticker"] == option].sort_values("transaction_date", ascending=False), 
+    #         hide_index=True
+    #     )
 
-
-    # with col2:
-    #     st.subheader("Most Sell")
-    #     st.header(f"""{df[df["sell_rank"] == 1]["volume"].values[0]:,}""")
-    #     f"""**{df[df["sell_rank"] == 1]["ticker"].values[0]}**"""
-    #     df.loc[df["sell_rank"] <= limit_row, ["ticker", "volume"]]
-
-    # with col3:
+    with col3:
+        st.dataframe(df3, hide_index=True)
     #     st.subheader("Most Buy & Sell")
     #     st.header(f"""{df2[df2["rn"] == 1]["volume"].values[0]:,}""")
     #     f"""**{df2[df2["rn"] == 1]["ticker"].values[0]}**"""
