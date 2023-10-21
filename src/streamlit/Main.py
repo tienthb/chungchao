@@ -42,7 +42,8 @@ st.markdown(
     </style>
     """,unsafe_allow_html=True
 )
-n_months = st.number_input("Insert number of months", value=9)
+n_months = st.number_input("Insert number of months", value=9.0)
+
 df, df2, df3 = al.calc_top_10_stock(n_months)
 col1, col2, col3 = st.columns(3)
 
