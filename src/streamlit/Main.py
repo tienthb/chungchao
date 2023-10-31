@@ -44,11 +44,12 @@ st.markdown(
 )
 n_months = st.number_input("Insert number of months", value=9.0)
 
-df, df2, df3 = al.calc_top_10_stock(n_months)
+df, df2, df3, df4 = al.calc_top_10_stock(n_months)
 col1, col2, col3 = st.columns(3)
 
 with col1:
     st.dataframe(df, hide_index=True)
+    st.dataframe(df4, hide_index=True)
 
 with col2:
     st.dataframe(df2, hide_index=True)

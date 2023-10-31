@@ -149,4 +149,31 @@ def calc_top_10_stock(n_months):
     column_names = [desc[0] for desc in cur.description]
     df3 = pd.DataFrame(cur.fetchall(), columns=column_names)
     df3 = df3.astype({"total_sell_vol": np.int64})
-    return df, df2, df3
+
+    query = f"""WITH date_param AS 
+        (
+            SELECT NOW()::date t_date, (NOW() - INTERVAL '{days} days')::DATE f_date
+        )
+        ,top_vol AS 
+        (
+            SELECT 
+                tv.ticker,
+                SUM(tv.buy_vol) AS total_buy_vol,
+                SUM(tv.buy_amt) AS total_buy_amt,
+                CASE WHEN SUM(tv.buy_vol) = 0 THEN 0 ELSE SUM(tv.buy_amt) / SUM(tv.buy_vol) END AS price,
+                CASE WHEN SUM(tv.buy_vol - tv.sell_vol) = 0 THEN 0 ELSE SUM(tv.buy_amt - tv.sell_amt) / SUM(tv.buy_vol - tv.sell_vol) END AS price2
+            FROM transaction_volume tv
+                INNER JOIN date_param p ON tv.transaction_date BETWEEN f_date AND t_date
+            GROUP BY tv.ticker
+        )
+        SELECT *
+        FROM top_vol
+        ORDER BY total_buy_amt DESC
+        LIMIT 10
+    """   
+    cur.execute(query)
+    column_names = [desc[0] for desc in cur.description]
+    df4 = pd.DataFrame(cur.fetchall(), columns=column_names)
+    df4 = df4.astype({"total_buy_amt": np.int64, "total_buy_vol": np.int64, "price": np.int16, "price2": np.int16})
+
+    return df, df2, df3, df4
